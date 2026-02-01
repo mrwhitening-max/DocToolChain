@@ -1,9 +1,9 @@
-docToolchainConfig {
-    inputDir = 'src/docs'
-    outputDir = 'build/html5'
+inputPath = 'src/docs'
 
-    // Hier definierst du deine Dokumente
-    inputFiles {
-        file 'arc42.adoc'
-    }
-}
+inputFiles = [
+    [file: 'arc42.adoc', formats: ['html', 'pdf']],
+]
+
+imageDirs = [
+    'images/.',
+]
