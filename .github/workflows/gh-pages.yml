@@ -1,1 +1,27 @@
-Test
+name: docToolchain Build & Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. Repo auschecken
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # 2. docToolchain im Docker-Container ausführen
+      - name: Build docs
+        run: |
+          chmod +x dtcw
+          ./dtcw docker generateSite
+
+      # 3. Build-Output auf gh-pages deployen
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./build/html5
