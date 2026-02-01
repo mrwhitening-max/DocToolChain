@@ -19,7 +19,7 @@ plantuml::docs/structurizr/diagrams/SystemContext-001.puml["Systemkontext",forma
 
 === Technischer Kontext
 
-plantuml::../structurizr/diagrams/Container-001.puml["structurizr-Container",format=svg]
+plantuml::docs/structurizr/diagrams/Container-001.puml["structurizr-Container",format=svg]
 
 
 
