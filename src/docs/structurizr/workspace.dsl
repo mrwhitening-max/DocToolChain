@@ -1,105 +1,46 @@
 workspace {
-
     model {
         user = person "User"
         softwareSystem = softwareSystem "Software System" {
             webapp = container "Web Application" "Java/Spring Boot App"
-            database = container "Database" "PostgreSQL" {
-                webapp -> this "Reads from and writes to"
-            }
+            database = container "Database" "PostgreSQL"
+            webapp -> database "Reads from and writes to"
         }
-
         user -> webapp "Uses"
+    }
 
-        # --- Deployment Environment ---
-        deploymentEnvironment "Production" {
+    deploymentEnvironment "Production" {
+        deploymentNode "AWS" {
+            region = deploymentNode "eu-central-1" {
+                webSg = infrastructureNode "Web Security Group"
+                alb = infrastructureNode "Application Load Balancer"
 
-            deploymentNode "AWS" {
-                tags "Amazon Web Services - Cloud"
-
-                region = deploymentNode "eu-central-1" {
-                    tags "Amazon Web Services - Region"
-
-                    # Infrastructure: Load Balancer & SG
-                    webSg = infrastructureNode "Web Security Group" "Allows HTTP/S traffic"
-                    alb = infrastructureNode "Application Load Balancer" "Verteilt Traffic auf EC2 Instanzen" {
-                        webSg -> this "Secures"
-                    }
-
-                    # Availability Zone 1
-                    az1 = deploymentNode "Availability Zone 1" {
-                        tags "Amazon Web Services - Availability Zone"
-
-                        deploymentNode "EC2 Instance" {
-                            containerInstance webapp
-                        }
-                    }
-
-                    # Availability Zone 2
-                    az2 = deploymentNode "Availability Zone 2" {
-                        tags "Amazon Web Services - Availability Zone"
-
-                        deploymentNode "EC2 Instance" {
-                            containerInstance webapp
-                        }
-                    }
-
-                    # Availability Zone 3
-                    az3 = deploymentNode "Availability Zone 3" {
-                        tags "Amazon Web Services - Availability Zone"
-
-                        deploymentNode "EC2 Instance" {
-                            containerInstance webapp
-                        }
-                    }
-
-                    # Database Layer (Multi-AZ RDS)
-                    dbSg = infrastructureNode "Database Security Group" "Allows SQL traffic from Web SG"
-
-                    deploymentNode "RDS Multi-AZ" {
-                        tags "Amazon Web Services - RDS"
-                        containerInstance database
-                    }
-
-                    # Connections in Deployment
-                    user -> alb "HTTPS Requests"
-                    alb -> webapp "Forwards requests to"
-                    dbSg -> database "Secures"
+                az1 = deploymentNode "AZ 1" {
+                    # Wir weisen die Instanz einer Variable zu
+                    webappInst1 = containerInstance webapp
                 }
+                az2 = deploymentNode "AZ 2" {
+                    webappInst2 = containerInstance webapp
+                }
+
+                dbNode = deploymentNode "RDS" {
+                    dbInst = containerInstance database
+                }
+
+                # Hier korrigieren wir die Pfade:
+                user -> alb "Requests"
+                alb -> webappInst1 "Forwards to"
+                alb -> webappInst2 "Forwards to"
+                webappInst1 -> dbInst "Writes"
+                webappInst2 -> dbInst "Writes"
             }
         }
     }
 
     views {
-        systemContext softwareSystem {
+        deployment softwareSystem "Production" "AWS_HA" {
             include *
             autolayout lr
-        }
-
-        container softwareSystem {
-            include *
-            autolayout lr
-        }
-
-        # Die neue Deployment Sicht
-        deployment softwareSystem "Production" "AWS_HA_Deployment" {
-            include *
-            autolayout lr
-            description "Hochverfügbare Verteilung über 3 AZs mit ALB und RDS."
-        }
-
-        theme default
-
-        # Optional: Styling für AWS Komponenten
-        styles {
-            element "Amazon Web Services - Cloud" {
-                background #ffffff
-                color #000000
-            }
-            element "Infrastructure Node" {
-                shape RoundedBox
-                background #ffffff
-            }
         }
     }
 }
