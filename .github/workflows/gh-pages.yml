@@ -21,8 +21,12 @@ jobs:
         run: |
           chmod +x dtcw
           ./dtcw docker generateHTML
+      # 3. Rename arc42.html > index.html
+      - name: Create index.html redirect
+        run: |
+          echo '<meta http-equiv="refresh" content="0; url=arc42.html">' > build/html5/index.html
 
-      # 3. Build-Output auf gh-pages deployen
+      # 4. Build-Output auf gh-pages deployen
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
