@@ -10,7 +10,7 @@ ifndef::imagesdir[:imagesdir: ../images]
 === Fachlicher Kontext
 
 
-
+plantuml::docs/structurizr/diagrams/Diagram1.puml["Systemkontext",format=svg]
 
 
 **<Diagramm und/oder Tabelle>**

@@ -6,7 +6,7 @@ ifndef::imagesdir[:imagesdir: ../images]
 
 === Infrastruktur Ebene 1
 
-plantuml::docs/structurizr/diagrams/Diagram1.puml["Systemkontext",format=svg]
+
 
 _**<Übersichtsdiagramm>**_
 

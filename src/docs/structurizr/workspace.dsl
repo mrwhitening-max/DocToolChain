@@ -1,17 +1,28 @@
-workspace "Name" "Description" {
+workspace {
 
     model {
-        u = person "User"
-        ss = softwareSystem "Software System"
-
-        u -> ss "Uses"
-    }
-
-    views {
-        systemContext ss "Diagram1" {
-            include *
-            autolayout lr
+        user = person "User"
+        softwareSystem = softwareSystem "Software System" {
+            webapp = container "Web Application" {
+                user -> this "Uses"
+            }
+            container "Database" {
+                webapp -> this "Reads from and writes to"
+            }
         }
     }
 
+    views {
+        systemContext softwareSystem {
+            include *
+            autolayout lr
+        }
+
+        container softwareSystem {
+            include *
+            autolayout lr
+        }
+
+        theme default
+    }
 }
