@@ -16,3 +16,15 @@ taskInputsDirs = [
     "${inputPath}/images",
 ]
 taskInputsFiles = []
+
+structurizr = [:]
+
+structurizr.with {
+    workspace = {
+        path = 'src/docs/structurizr'
+    }
+    export = {
+        outputPath = 'src/docs/structurizr/diagrams'
+        format = 'plantuml/c4plantuml'
+    }
+}
