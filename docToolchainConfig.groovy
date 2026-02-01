@@ -1,6 +1,6 @@
 outputPath = 'build'
 
-inputPath = 'src/docs'
+inputPath = 'src'
 
 inputFiles = [
     [file: 'arc42.adoc', formats: ['html', 'pdf']],
@@ -12,5 +12,7 @@ imageDirs = [
 
 taskInputsDirs = [
     "${inputPath}",
+    "${inputPath}/docs",
+    "${inputPath}/images",
 ]
 taskInputsFiles = []
