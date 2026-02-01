@@ -14,11 +14,6 @@ include::docs/config.adoc[]
 // toc-title definition MUST follow document title without blank line!
 :toc-title: Inhaltsverzeichnis
 
-//additional style for arc42 help callouts
-include::docs/../../../common/styles/arc42-help-style.adoc[]
-
-
-
 include::docs/about-arc42.adoc[]
 
 // horizontal line
