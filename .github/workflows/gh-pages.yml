@@ -17,7 +17,7 @@ jobs:
       - name: Build docs
         run: |
           chmod +x dtcw
-          ./dtcw docker generateSite
+          ./dtcw docker generateHTML
 
       # 3. Build-Output auf gh-pages deployen
       - name: Deploy to GitHub Pages
