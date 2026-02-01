@@ -27,7 +27,14 @@ jobs:
         run: |
           echo '<meta http-equiv="refresh" content="0; url=arc42.html">' > build/html5/index.html
 
-      # 4. Build-Output auf gh-pages deployen
+      # 4. Export dsl to puml
+      - name: Build docs
+        run: |
+          chmod +x dtcw
+          ./dtcw docker exportStructurizr
+          ./dtcw docker generateHTML
+
+      # 5. Build-Output auf gh-pages deployen
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
