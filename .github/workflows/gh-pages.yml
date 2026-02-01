@@ -16,11 +16,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # 2. Structurizr DSL zu PlantUML exportieren
-      - name: Export Structurizr
+      # 2. Structurizr exportieren und Docs bauen
+      - name: Build docs
         run: |
           chmod +x dtcw
-          ./dtcw docker exportStructurizr
+          ./dtcw docker exportStructurizr generateHTML
 
       # 3. docToolchain bauen
       - name: Build docs
