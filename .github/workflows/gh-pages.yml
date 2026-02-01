@@ -21,6 +21,7 @@ jobs:
         run: |
           chmod +x dtcw
           ./dtcw docker generateHTML
+
       # 3. Rename arc42.html > index.html
       - name: Create index.html redirect
         run: |
