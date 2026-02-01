@@ -1,63 +1,52 @@
 workspace {
 
     model {
-        user = person "User" "Ein Endanwender"
+        user = person "User" "Endanwender"
 
-        softwareSystem = softwareSystem "Mein Software System" {
+        softwareSystem = softwareSystem "SoftwareSystem" {
             webapp = container "Web Application" "Java/Spring Boot"
             database = container "Database" "PostgreSQL"
 
-            webapp -> database "Liest von/schreibt auf" "SQL/TCP"
+            webapp -> database "Liest/Schreibt" "SQL/TCP"
         }
 
-        # WICHTIG: Die logische Verbindung bleibt bestehen
-        user -> webapp "Nutzt die Anwendung" "HTTPS"
+        user -> webapp "Nutzt" "HTTPS"
 
         deploymentEnvironment "Production" {
             deploymentNode "AWS" {
-                tags "Amazon Web Services - Cloud"
-
                 region = deploymentNode "eu-central-1" {
 
                     # Infrastructure Nodes
+                    alb = infrastructureNode "Application Load Balancer"
                     webSg = infrastructureNode "Web Security Group"
                     dbSg = infrastructureNode "Database Security Group"
-                    alb = infrastructureNode "Application Load Balancer"
 
                     azA = deploymentNode "Availability Zone A" {
-                        deploymentNode "EC2 Instance" {
+                        deploymentNode "EC2 Instance 1" {
                             webappInst1 = containerInstance webapp
                         }
                     }
                     azB = deploymentNode "Availability Zone B" {
-                        deploymentNode "EC2 Instance" {
+                        deploymentNode "EC2 Instance 2" {
                             webappInst2 = containerInstance webapp
                         }
                     }
                     azC = deploymentNode "Availability Zone C" {
-                        deploymentNode "EC2 Instance" {
+                        deploymentNode "EC2 Instance 3" {
                             webappInst3 = containerInstance webapp
                         }
                     }
 
-                    rds = deploymentNode "AWS RDS" {
+                    deploymentNode "RDS Multi-AZ" {
                         dbInst = containerInstance database
                     }
 
-                    # --- FIX: Die korrekte Kette ---
-                    # Wir lassen den User die Instanzen direkt ansprechen (logisch erlaubt)
-                    # UND beschreiben den Weg über die Infrastruktur.
+                    # --- NUR INFRA-BEZIEHUNGEN ---
+                    # Das hier ist meistens das Problem. Wir verbinden Infra zu Instanz:
+                    alb -> webappInst1 "Forwarded"
+                    alb -> webappInst2 "Forwarded"
+                    alb -> webappInst3 "Forwarded"
 
-                    user -> webappInst1 "Anfrage via ALB" "HTTPS"
-                    user -> webappInst2 "Anfrage via ALB" "HTTPS"
-                    user -> webappInst3 "Anfrage via ALB" "HTTPS"
-
-                    # Die Infrastruktur-Beziehungen untereinander sind erlaubt:
-                    alb -> webappInst1 "Forwarded zu"
-                    alb -> webappInst2 "Forwarded zu"
-                    alb -> webappInst3 "Forwarded zu"
-
-                    # Security Groups
                     webSg -> alb "Sichert"
                     dbSg -> dbInst "Sichert"
                 }
@@ -66,22 +55,13 @@ workspace {
     }
 
     views {
-        systemContext softwareSystem "SystemContext" {
-            include *
-            autolayout lr
-        }
-
-        container softwareSystem "Containers" {
-            include *
-            autolayout lr
-        }
-
         deployment softwareSystem "Production" "AWS_HA_Sicht" {
+            # 'include *' nimmt automatisch den 'user' und seine Beziehung zur 'webapp' mit auf.
+            # Da 'user -> webapp' im Modell existiert, zeichnet Structurizr die Linie
+            # zu den Instanzen AUTOMATISCH, ohne dass wir sie manuell im Deployment definieren müssen.
             include *
             autolayout lr
         }
-
-        theme default
 
         styles {
             element "Infrastructure Node" {
