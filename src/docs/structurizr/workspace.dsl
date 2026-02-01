@@ -4,30 +4,79 @@ workspace {
         user = person "User" "Ein Endanwender des Systems"
 
         softwareSystem = softwareSystem "Mein Software System" {
-            webapp = container "Web Application" "Bietet die Benutzeroberfläche" "Java/Spring Boot"
-            database = container "Database" "Speichert Daten" "PostgreSQL"
+            webapp = container "Web Application" "Java/Spring Boot"
+            database = container "Database" "PostgreSQL"
 
             webapp -> database "Liest von und schreibt auf" "SQL/TCP"
         }
 
-        user -> webapp "Nutzt die Anwendung über" "HTTPS"
+        user -> webapp "Nutzt die Anwendung" "HTTPS"
+
+        # --- DEPLOYMENT MUSS VOR DEN VIEWS STEHEN ---
+        production = deploymentEnvironment "Production" {
+            deploymentNode "AWS" {
+                tags "Amazon Web Services - Cloud"
+
+                region = deploymentNode "eu-central-1" {
+
+                    # Infrastructure Nodes
+                    webSg = infrastructureNode "Web Security Group" "Erlaubt Port 443"
+                    dbSg = infrastructureNode "Database Security Group" "Erlaubt Port 5432"
+                    alb = infrastructureNode "Application Load Balancer" "Externer HTTPS Load Balancer"
+
+                    # 3 Availability Zones
+                    azA = deploymentNode "Availability Zone A" {
+                        deploymentNode "EC2 Instance" "t3.medium" {
+                            webappInst1 = containerInstance webapp
+                        }
+                    }
+                    azB = deploymentNode "Availability Zone B" {
+                        deploymentNode "EC2 Instance" "t3.medium" {
+                            webappInst2 = containerInstance webapp
+                        }
+                    }
+                    azC = deploymentNode "Availability Zone C" {
+                        deploymentNode "EC2 Instance" "t3.medium" {
+                            webappInst3 = containerInstance webapp
+                        }
+                    }
+
+                    # Multi-AZ RDS
+                    rds = deploymentNode "AWS RDS" "Managed Database Service" {
+                        dbInst = containerInstance database
+                    }
+
+                    # Deployment-Beziehungen
+                    user -> alb "HTTPS Requests"
+                    alb -> webappInst1 "Forwarded"
+                    alb -> webappInst2 "Forwarded"
+                    alb -> webappInst3 "Forwarded"
+
+                    # Security Group Visualisierung
+                    webSg -> alb "Sichert"
+                    dbSg -> dbInst "Sichert"
+                }
+            }
+        }
     }
 
     views {
-        systemContext softwareSystem {
+        # Explizite Keys (z.B. "SystemContext") verhindern die Warnung im Log
+        systemContext softwareSystem "SystemContext" {
             include *
             autolayout lr
         }
 
-        container softwareSystem {
+        container softwareSystem "Containers" {
             include *
             autolayout lr
         }
 
+        # Jetzt findet der Parser das Environment "Production"
         deployment softwareSystem "Production" "AWS_HA_Sicht" {
             include *
             autolayout lr
-            description "Hochverfügbare AWS Architektur über 3 Availability Zones."
+            description "Hochverfügbare AWS Architektur über 3 AZs."
         }
 
         theme default
@@ -37,63 +86,6 @@ workspace {
                 background #ffffff
                 color #000000
                 shape RoundedBox
-            }
-        }
-    }
-
-    # --- Deployment Bereich ---
-    deploymentEnvironment "Production" {
-
-        deploymentNode "AWS" {
-            tags "Amazon Web Services - Cloud"
-
-            region = deploymentNode "eu-central-1" {
-
-                # Security Groups als Infrastructure Nodes
-                webSg = infrastructureNode "Web Security Group" "Erlaubt Port 443"
-                dbSg = infrastructureNode "Database Security Group" "Erlaubt Port 5432 von Web SG"
-
-                alb = infrastructureNode "Application Load Balancer" "Externer HTTPS Load Balancer"
-
-                # AZ 1
-                az1 = deploymentNode "Availability Zone A" {
-                    ec2_1 = deploymentNode "EC2 Instance" "t3.medium" {
-                        webappInstance1 = containerInstance webapp
-                    }
-                }
-
-                # AZ 2
-                az2 = deploymentNode "Availability Zone B" {
-                    ec2_2 = deploymentNode "EC2 Instance" "t3.medium" {
-                        webappInstance2 = containerInstance webapp
-                    }
-                }
-
-                # AZ 3
-                az3 = deploymentNode "Availability Zone C" {
-                    ec2_3 = deploymentNode "EC2 Instance" "t3.medium" {
-                        webappInstance3 = containerInstance webapp
-                    }
-                }
-
-                # Datenbank (RDS Multi-AZ)
-                rds = deploymentNode "AWS RDS" "Managed Database Service" {
-                    dbInstance = containerInstance database
-                }
-
-                # --- Verknüpfungen (Deployment-spezifisch) ---
-
-                # Der User greift auf den ALB zu (Infrastruktur)
-                user -> alb "HTTPS Requests an"
-
-                # Der ALB verteilt auf die konkreten Instanzen
-                alb -> webappInstance1 "Forwarded zu"
-                alb -> webappInstance2 "Forwarded zu"
-                alb -> webappInstance3 "Forwarded zu"
-
-                # Security Group Logik (visuelle Darstellung der Absicherung)
-                webSg -> alb "Schützt"
-                dbSg -> dbInstance "Schützt"
             }
         }
     }
