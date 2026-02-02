@@ -5,8 +5,8 @@ on:
     branches:
       - main
     tags:
-      - 'v*' # Trigger bei v1.0.0, v1.1.0, etc.
-  workflow_dispatch: {}
+      - 'v*' # Triggered bei v1.0.0, v1.0.1 etc.
+  workflow_dispatch: {} # Erlaubt manuelles Starten unter dem Tab "Actions"
 
 permissions:
   contents: write
@@ -27,7 +27,7 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      # 2. System-Abhängigkeiten installieren
+      # 2. System-Abhängigkeiten installieren (Pandoc für EPUB, Graphviz für Diagramme)
       - name: Install Dependencies
         run: |
           sudo apt-get update
@@ -39,7 +39,8 @@ jobs:
           chmod +x dtcw
           ./dtcw local install doctoolchain
 
-      # 4. Build-Schritt mit Graphviz-Fix und Variablen-Injektion
+      # 4. Der fixierte Build-Schritt
+      # Nutzt export für Graphviz und befüllt deine Variablen {revnumber} etc.
       - name: Build docs
         run: |
           export GRAPHVIZ_DOT=/usr/bin/dot
@@ -53,14 +54,14 @@ jobs:
           find build -name "*.epub" -exec cp {} epub/arc42.epub \;
           find build -name "*.pdf" -exec cp {} pdf/arc42.pdf \;
 
-      # 6. Redirect für GitHub Pages
+      # 6. Redirect für GitHub Pages (HTML Hauptseite)
       - name: Create index.html redirect
         run: |
           mkdir -p build/html5
           echo '<meta http-equiv="refresh" content="0; url=arc42.html">' > build/html5/index.html
 
       # 7. PDF und EPUB ins Repository committen
-      # Fix: Explizites Pushing nach 'main', um den Detached HEAD Fehler zu umgehen
+      # Der Trick "HEAD:main" erlaubt Pushes auch wenn man gerade auf einem Tag (Detached HEAD) ist.
       - name: Commit and Push Artifacts
         run: |
           git config --local user.email "action@github.com"

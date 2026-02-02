@@ -4,8 +4,6 @@
 // ====================================
 
 
-// configure DE settings for asciidoc
-include::docs/config.adoc[]
 
 = image:arc42-logo.png[arc42] Software Documentation
 :revnumber: {revnumber}
@@ -13,6 +11,9 @@ include::docs/config.adoc[]
 :revremark: {revremark}
 // toc-title definition MUST follow document title without blank line!
 :toc-title: Inhaltsverzeichnis
+
+// configure DE settings for asciidoc
+include::docs/config.adoc[]
 
 include::docs/about-arc42.adoc[]
 
