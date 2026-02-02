@@ -36,8 +36,8 @@ jobs:
 
       # 4. Build ausführen (local nutzt nun das installierte docToolchain und Pandoc)
       - name: Build docs
-          run: |
-            ./dtcw local exportStructurizr generateHTML convertToEpub -P-a-asciidoctor-diagram-outdir=build/images
+        run: |
+          ./dtcw local exportStructurizr generateHTML convertToEpub -P-a-asciidoctor-diagram-outdir=build/images
 
       # 5. EPUB für Repository vorbereiten
       - name: Prepare EPUB folder
