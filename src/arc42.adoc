@@ -7,7 +7,7 @@
 // configure DE settings for asciidoc
 include::docs/config.adoc[]
 
-= image:arc42-logo.png[arc42] Template
+= image:arc42-logo.png[arc42] Software Documentation
 :revnumber: {revnumber}
 :revdate: {revdate}
 :revremark: {revremark}

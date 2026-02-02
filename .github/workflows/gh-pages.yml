@@ -42,6 +42,10 @@ jobs:
           export GRAPHVIZ_DOT=/usr/bin/dot
           ./dtcw local exportStructurizr generateHTML generatePDF convertToEpub
 
+      - name: Build docs
+        run: |
+          ./dtcw local generateHTML -Pattributes="revnumber=${{ github.ref_name }},revremark=GitHub Action Build"
+
       # 5. EPUB und PDF für das Repository vorbereiten
       - name: Prepare Artifact folders
         run: |
