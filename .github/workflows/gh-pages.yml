@@ -17,14 +17,14 @@ jobs:
         with:
           fetch-depth: 0
 
-      # 1. Java 17 installieren
+      # 1. Java 17 installieren (Voraussetzung für docToolchain local)
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
 
-      # 2. System-Abhängigkeiten installieren
+      # 2. System-Abhängigkeiten installieren (Pandoc für EPUB, Graphviz für Diagramme)
       - name: Install Dependencies
         run: |
           sudo apt-get update
@@ -36,22 +36,22 @@ jobs:
           chmod +x dtcw
           ./dtcw local install doctoolchain
 
-      # 4. Der fixierte Build-Schritt (NUR EINMAL AUFRUFEN)
+      # 4. Der fixierte Build-Schritt (Kombiniert alle Tasks in einem Aufruf)
       - name: Build docs
         run: |
           export GRAPHVIZ_DOT=/usr/bin/dot
           ./dtcw local exportStructurizr generateHTML generatePDF convertToEpub \
-          -Pattributes=revnumber=${{ github.ref_name }},revremark=GitHub\ Action\ Build
+          -Pattributes=revnumber=${{ github.ref_name }},revremark=GitHub-Action-Build
 
       # 5. EPUB und PDF für das Repository vorbereiten
       - name: Prepare Artifact folders
         run: |
           mkdir -p epub pdf
-          # Kopiert die Dateien aus dem build-Verzeichnis in die Repo-Ordner
+          # Kopiert die Dateien aus dem build-Verzeichnis (entspricht outputPath = 'build')
           find build -name "*.epub" -exec cp {} epub/arc42.epub \;
           find build -name "*.pdf" -exec cp {} pdf/arc42.pdf \;
 
-      # 6. Redirect für GitHub Pages (HTML)
+      # 6. Redirect für GitHub Pages (HTML Hauptseite)
       - name: Create index.html redirect
         run: |
           mkdir -p build/html5
@@ -63,6 +63,7 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add epub/arc42.epub pdf/arc42.pdf
+          # Nur pushen, wenn es Änderungen gibt
           git diff --quiet && git diff --staged --quiet || (git commit -m "docs: update pdf and epub versions" && git push)
 
       # 8. HTML auf GitHub Pages veröffentlichen
