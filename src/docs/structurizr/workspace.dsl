@@ -6,7 +6,6 @@ workspace {
         softwareSystem = softwareSystem "SoftwareSystem" {
             webapp = container "Web Application" "Java/Spring Boot"
             database = container "Database" "PostgreSQL"
-
             webapp -> database "Liest/Schreibt" "SQL/TCP"
         }
 
@@ -14,35 +13,56 @@ workspace {
 
         deploymentEnvironment "Production" {
             deploymentNode "AWS" {
+                tags "Amazon Web Services - Cloud"
+
                 region = deploymentNode "eu-central-1" {
+                    tags "Amazon Web Services - Region"
 
-                    # Infrastructure Nodes
-                    alb = infrastructureNode "Application Load Balancer"
-                    webSg = infrastructureNode "Web Security Group"
-                    dbSg = infrastructureNode "Database Security Group"
+                    # Infrastructure
+                    alb = infrastructureNode "Application Load Balancer" {
+                        tags "Amazon Web Services - Application Load Balancer"
+                    }
 
-                    azA = deploymentNode "Availability Zone A" {
-                        deploymentNode "EC2 Instance 1" {
-                            webappInst1 = containerInstance webapp
-                        }
+                    # Security Groups (Icons via Tags)
+                    webSg = infrastructureNode "Web Security Group" {
+                        tags "Amazon Web Services - VPC Security Group"
                     }
-                    azB = deploymentNode "Availability Zone B" {
-                        deploymentNode "EC2 Instance 2" {
-                            webappInst2 = containerInstance webapp
-                        }
+                    dbSg = infrastructureNode "Database Security Group" {
+                        tags "Amazon Web Services - VPC Security Group"
                     }
-                    azC = deploymentNode "Availability Zone C" {
-                        deploymentNode "EC2 Instance 3" {
-                            webappInst3 = containerInstance webapp
+
+                    # Gruppierung der Web-Ebene (Auto Scaling Group Simulation)
+                    asg = deploymentNode "Auto Scaling Group" "Sichert 3 Instanzen" {
+
+                        azA = deploymentNode "Availability Zone A" {
+                            tags "Amazon Web Services - Availability Zone"
+                            deploymentNode "EC2 Instance" {
+                                tags "Amazon Web Services - EC2"
+                                webappInst1 = containerInstance webapp
+                            }
+                        }
+                        azB = deploymentNode "Availability Zone B" {
+                            tags "Amazon Web Services - Availability Zone"
+                            deploymentNode "EC2 Instance" {
+                                tags "Amazon Web Services - EC2"
+                                webappInst2 = containerInstance webapp
+                            }
+                        }
+                        azC = deploymentNode "Availability Zone C" {
+                            tags "Amazon Web Services - Availability Zone"
+                            deploymentNode "EC2 Instance" {
+                                tags "Amazon Web Services - EC2"
+                                webappInst3 = containerInstance webapp
+                            }
                         }
                     }
 
                     deploymentNode "RDS Multi-AZ" {
+                        tags "Amazon Web Services - RDS"
                         dbInst = containerInstance database
                     }
 
-                    # --- NUR INFRA-BEZIEHUNGEN ---
-                    # Das hier ist meistens das Problem. Wir verbinden Infra zu Instanz:
+                    # Beziehungen
                     alb -> webappInst1 "Forwarded"
                     alb -> webappInst2 "Forwarded"
                     alb -> webappInst3 "Forwarded"
@@ -55,18 +75,19 @@ workspace {
     }
 
     views {
+        # Falls dein arc42 noch andere Diagramme braucht, füge sie hier hinzu!
+
         deployment softwareSystem "Production" "AWS_HA_Sicht" {
-            # 'include *' nimmt automatisch den 'user' und seine Beziehung zur 'webapp' mit auf.
-            # Da 'user -> webapp' im Modell existiert, zeichnet Structurizr die Linie
-            # zu den Instanzen AUTOMATISCH, ohne dass wir sie manuell im Deployment definieren müssen.
             include *
             autolayout lr
         }
 
+        # DAS ZAUBERMITTEL FÜR DIE OPTIK:
+        theme https://static.structurizr.com/themes/amazon-web-services-2023.01.31/theme.json
+
         styles {
+            # Ergänzende Styles für Elemente, die kein Icon haben
             element "Infrastructure Node" {
-                background #ffffff
-                color #000000
                 shape RoundedBox
             }
         }
