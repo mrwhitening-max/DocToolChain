@@ -4,8 +4,6 @@ on:
   push:
     branches:
       - main
-    tags:
-      - 'v*' # Triggered bei v1.0.0, v1.0.1 etc.
   workflow_dispatch: {} # Erlaubt manuelles Starten unter "Actions"
 
 permissions:
@@ -39,14 +37,13 @@ jobs:
           chmod +x dtcw
           ./dtcw local install doctoolchain
 
-      # 4. Der fixierte Build-Schritt
-      # - Setzt den Pfad für Graphviz
-      # - Injiziert die Versionsnummer (Branch-Name oder Tag-Name)
+      # 4. Der Build-Schritt
+      # Wir nutzen 'main' oder den Branch-Namen als revnumber
       - name: Build docs
         run: |
           export GRAPHVIZ_DOT=/usr/bin/dot
           ./dtcw local exportStructurizr generateHTML generatePDF convertToEpub \
-          "-Pattributes=revnumber=${{ github.ref_name }},revdate=$(date +'%d.%m.%Y'),revremark=GitHub-Action-Build"
+          "-Pattributes=revnumber=${{ github.ref_name }},revdate=$(date +'%d.%m.%Y'),revremark=GitHub-Build"
 
       # 5. EPUB und PDF für das Repository vorbereiten
       - name: Prepare Artifact folders
@@ -55,20 +52,19 @@ jobs:
           find build -name "*.epub" -exec cp {} epub/arc42.epub \;
           find build -name "*.pdf" -exec cp {} pdf/arc42.pdf \;
 
-      # 6. Redirect für GitHub Pages (HTML Hauptseite)
+      # 6. Redirect für GitHub Pages
       - name: Create index.html redirect
         run: |
           mkdir -p build/html5
           echo '<meta http-equiv="refresh" content="0; url=arc42.html">' > build/html5/index.html
 
       # 7. PDF und EPUB ins Repository committen
-      # "HEAD:main" sorgt dafür, dass auch beim Bauen eines Tags die PDFs im main-Branch landen.
       - name: Commit and Push Artifacts
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add epub/arc42.epub pdf/arc42.pdf
-          git diff --quiet && git diff --staged --quiet || (git commit -m "docs: update artifacts for ${{ github.ref_name }}" && git push origin HEAD:main)
+          git diff --quiet && git diff --staged --quiet || (git commit -m "docs: update artifacts for ${{ github.ref_name }}" && git push origin main)
 
       # 8. HTML auf GitHub Pages veröffentlichen
       - name: Deploy to GitHub Pages
