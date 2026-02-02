@@ -12,31 +12,33 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      # 1. Repo auschecken
+      # 1. Repository auschecken
       - name: Checkout
         uses: actions/checkout@v4
 
-      # 2. Structurizr exportieren und generierte Files prüfen
-      - name: Export Structurizr & List Files
-        run: |
-          chmod +x dtcw
-          ./dtcw docker exportStructurizr
-          echo "--- Generierte Diagramme im Workspace: ---"
-          find . -name "*.puml"
-          find . -name "*.png"
-          find . -name "*.svg"
-
-      # 3. docToolchain bauen
+      # 2. docToolchain: Structurizr exportieren und HTML generieren
+      # Wir nutzen den Docker-Wrapper (dtcw), um lokale Installationen zu vermeiden.
       - name: Build docs
         run: |
+          chmod +x dtcw
           ./dtcw docker exportStructurizr generateHTML
 
+      # 3. Struktur prüfen (hilfreich für das Debugging im Log)
+      - name: List generated files
+        run: |
+          echo "--- Gefundene HTML-Dateien ---"
+          find build -name "*.html"
+
       # 4. Redirect erstellen
+      # Da deine Hauptdatei arc42.html heißt, braucht GitHub Pages eine index.html
       - name: Create index.html redirect
         run: |
+          # Der Ordner build/html5 wird durch generateHTML erstellt
+          mkdir -p build/html5
           echo '<meta http-equiv="refresh" content="0; url=arc42.html">' > build/html5/index.html
 
-      # 5. Deploy auf gh-pages
+      # 5. Deploy auf die gh-pages Branch
+      # Veröffentlicht den Inhalt von build/html5
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
