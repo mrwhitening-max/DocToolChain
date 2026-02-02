@@ -17,25 +17,37 @@ jobs:
         with:
           fetch-depth: 0
 
-      # Korrigierter Task: convertToEpub statt generateEPUB
+      # 1. Java 17 installieren (Voraussetzung für docToolchain lokal)
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      # 2. Pandoc auf dem Runner installieren
+      - name: Install Pandoc
+        run: sudo apt-get update && sudo apt-get install -y pandoc
+
+      # 3. docToolchain: Export & Generierung (Lokal via dtcw)
       - name: Build docs
         run: |
           chmod +x dtcw
-          ./dtcw docker exportStructurizr generateHTML convertToEpub
+          # Wir nutzen 'local' statt 'docker', da Pandoc jetzt auf dem Host ist
+          ./dtcw local exportStructurizr generateHTML convertToEpub
 
-      # EPUB finden und ins Repo-Verzeichnis kopieren
+      # 4. EPUB finden und ins Repo-Verzeichnis kopieren
       - name: Prepare EPUB folder
         run: |
           mkdir -p epub
-          # Wir suchen das File im build-Ordner (da outputPath = 'build')
           find build -name "*.epub" -exec cp {} epub/arc42.epub \;
 
+      # 5. Redirect für GH-Pages
       - name: Create index.html redirect
         run: |
           mkdir -p build/html5
           echo '<meta http-equiv="refresh" content="0; url=arc42.html">' > build/html5/index.html
 
-      # Zurück ins Repo pushen
+      # 6. EPUB zurück ins Repository pushen
       - name: Commit and Push EPUB
         run: |
           git config --local user.email "action@github.com"
@@ -43,6 +55,7 @@ jobs:
           git add epub/arc42.epub
           git diff --quiet && git diff --staged --quiet || (git commit -m "docs: update epub version" && git push)
 
+      # 7. Deploy auf die gh-pages Branch
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
