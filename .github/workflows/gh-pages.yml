@@ -47,16 +47,17 @@ jobs:
       - name: Prepare Artifact folders
         run: |
           mkdir -p epub pdf
+          # Kopiert die Dateien aus dem build-Verzeichnis in die Repo-Ordner
           find build -name "*.epub" -exec cp {} epub/arc42.epub \;
           find build -name "*.pdf" -exec cp {} pdf/arc42.pdf \;
 
-      # 6. Redirect für GitHub Pages
+      # 6. Redirect für GitHub Pages (HTML)
       - name: Create index.html redirect
         run: |
           mkdir -p build/html5
           echo '<meta http-equiv="refresh" content="0; url=arc42.html">' > build/html5/index.html
 
-      # 7. Dateien ins Repo committen
+      # 7. PDF und EPUB ins Repository committen
       - name: Commit and Push Artifacts
         run: |
           git config --local user.email "action@github.com"
@@ -64,7 +65,7 @@ jobs:
           git add epub/arc42.epub pdf/arc42.pdf
           git diff --quiet && git diff --staged --quiet || (git commit -m "docs: update pdf and epub versions" && git push)
 
-      # 8. Deploy HTML auf GitHub Pages
+      # 8. HTML auf GitHub Pages veröffentlichen
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
