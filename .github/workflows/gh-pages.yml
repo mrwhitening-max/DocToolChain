@@ -16,11 +16,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # 2. Structurizr exportieren und Docs bauen
-      - name: Build docs
+      # 2. Structurizr exportieren und generierte Files prüfen
+      - name: Export Structurizr & List Files
         run: |
           chmod +x dtcw
-          ./dtcw docker exportStructurizr generateHTML
+          ./dtcw docker exportStructurizr
+          echo "--- Generierte Diagramme im Workspace: ---"
+          find . -name "*.puml"
+          find . -name "*.png"
+          find . -name "*.svg"
 
       # 3. docToolchain bauen
       - name: Build docs
