@@ -20,7 +20,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      # 1. Java 17 installieren (ohne 'cache: gradle', um den Error zu vermeiden)
+      # 1. Java 17 installieren
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
@@ -46,7 +46,7 @@ jobs:
           ./dtcw local exportStructurizr generateHTML generatePDF convertToEpub \
           "-Pattributes=revnumber=${{ github.ref_name }},revdate=$(date +'%d.%m.%Y'),revremark=GitHub-Action-Build"
 
-      # 5. EPUB und PDF vorbereiten
+      # 5. EPUB und PDF für das Repository vorbereiten
       - name: Prepare Artifact folders
         run: |
           mkdir -p epub pdf
@@ -60,25 +60,15 @@ jobs:
           echo '<meta http-equiv="refresh" content="0; url=arc42.html">' > build/html5/index.html
 
       # 7. PDF und EPUB ins Repository committen
+      # Fix: Explizites Pushing nach 'main', um den Detached HEAD Fehler zu umgehen
       - name: Commit and Push Artifacts
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add epub/arc42.epub pdf/arc42.pdf
-          git diff --quiet && git diff --staged --quiet || (git commit -m "docs: update artifacts for ${{ github.ref_name }}" && git push)
+          git diff --quiet && git diff --staged --quiet || (git commit -m "docs: update artifacts for ${{ github.ref_name }}" && git push origin HEAD:main)
 
-      # 8. Upload Assets to Release (nur wenn ein Tag gepusht wurde)
-      - name: Upload Assets to Release
-        if: startsWith(github.ref, 'refs/tags/')
-        uses: softprops/action-gh-release@v2
-        with:
-          files: |
-            epub/arc42.epub
-            pdf/arc42.pdf
-          body: "Dokumentation Version ${{ github.ref_name }}"
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      # 9. HTML auf GitHub Pages veröffentlichen
+      # 8. HTML auf GitHub Pages veröffentlichen
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
