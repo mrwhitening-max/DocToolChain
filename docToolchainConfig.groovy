@@ -8,6 +8,7 @@ inputFiles = [
 
 imageDirs = [
     'images/.',
+    'src/docs/structurizr/diagrams' // <--- Diesen Pfad hinzufügen
 ]
 
 taskInputsDirs = [
