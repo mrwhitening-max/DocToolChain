@@ -1,9 +1,15 @@
-name: docToolchain Build, Deploy & Save Artifacts
+name: docToolchain Ultimate Build & Deploy
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
+    paths:
+      - 'src/**'
+      - 'images/**'
+      - 'docToolchainConfig.groovy'
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch: {} # Erlaubt manuelles Starten unter "Actions"
 
 permissions:
   contents: write
@@ -12,58 +18,62 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout Repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      # 1. Java 17 installieren
+      # 1. Java Setup mit Gradle-Cache für maximale Geschwindigkeit
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
+          cache: 'gradle'
 
-      # 2. System-Abhängigkeiten installieren
-      - name: Install Dependencies
+      # 2. System-Tools für PDF, EPUB und Diagramme
+      - name: Install System Dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y pandoc graphviz
 
-      # 3. docToolchain lokal installieren
+      # 3. docToolchain Installation
       - name: Install docToolchain local
         run: |
           chmod +x dtcw
           ./dtcw local install doctoolchain
 
-      # 4. Der fixierte Build-Schritt (Kombiniert alle Tasks in einem Aufruf)
-      - name: Build docs
+      # 4. Der Haupt-Build
+      # Wir nutzen doppelte Anführungszeichen für den Parameter-Block,
+      # um Leerzeichen im revremark sicher zu maskieren.
+      - name: Build all formats
         run: |
+          export GRAPHVIZ_DOT=/usr/bin/dot
           ./dtcw local exportStructurizr generateHTML generatePDF convertToEpub \
           "-Pattributes=revnumber=${{ github.ref_name }},revdate=$(date +'%d.%m.%Y'),revremark=GitHub-Action-Build"
 
-      # 5. EPUB und PDF für das Repository vorbereiten
-      - name: Prepare Artifact folders
+      # 5. Vorbereitung der Artefakte (PDF & EPUB)
+      - name: Prepare Artifact Folders
         run: |
           mkdir -p epub pdf
           find build -name "*.epub" -exec cp {} epub/arc42.epub \;
           find build -name "*.pdf" -exec cp {} pdf/arc42.pdf \;
 
-      # 6. Redirect für GitHub Pages
+      # 6. Index-Redirect für GitHub Pages
       - name: Create index.html redirect
         run: |
           mkdir -p build/html5
           echo '<meta http-equiv="refresh" content="0; url=arc42.html">' > build/html5/index.html
 
-      # 7. PDF und EPUB ins Repository committen
+      # 7. PDF und EPUB zurück ins Repo committen
       - name: Commit and Push Artifacts
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add epub/arc42.epub pdf/arc42.pdf
-          git diff --quiet && git diff --staged --quiet || (git commit -m "docs: update pdf and epub versions" && git push)
+          git diff --quiet && git diff --staged --quiet || (git commit -m "docs: auto-update pdf and epub versions" && git push)
 
-      # 8. HTML auf GitHub Pages veröffentlichen
+      # 8. HTML-Release auf GitHub Pages
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
