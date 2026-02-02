@@ -24,7 +24,7 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      # 2. System-Abhängigkeiten installieren (Pandoc & Graphviz)
+      # 2. System-Abhängigkeiten installieren
       - name: Install Dependencies
         run: |
           sudo apt-get update
@@ -36,12 +36,12 @@ jobs:
           chmod +x dtcw
           ./dtcw local install doctoolchain
 
-      # 4. Der fixierte Build-Schritt
+      # 4. Der fixierte Build-Schritt (NUR EINMAL AUFRUFEN)
       - name: Build docs
         run: |
           export GRAPHVIZ_DOT=/usr/bin/dot
           ./dtcw local exportStructurizr generateHTML generatePDF convertToEpub \
-          "-Pattributes=revnumber=${{ github.ref_name }},revremark=GitHub Action Build"
+          -Pattributes=revnumber=${{ github.ref_name }},revremark=GitHub\ Action\ Build
 
       # 5. EPUB und PDF für das Repository vorbereiten
       - name: Prepare Artifact folders
@@ -64,7 +64,7 @@ jobs:
           git add epub/arc42.epub pdf/arc42.pdf
           git diff --quiet && git diff --staged --quiet || (git commit -m "docs: update pdf and epub versions" && git push)
 
-      # 8. Deploy HTML
+      # 8. Deploy HTML auf GitHub Pages
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
