@@ -6,9 +6,9 @@
 
 
 = image:arc42-logo.png[arc42] Software Documentation
-:revnumber: {revnumber}
-:revdate: {revdate}
-:revremark: {revremark}
+:revnumber: v0.0.0-draft
+:revdate: 01.01.2026
+:revremark: Entwurf
 // toc-title definition MUST follow document title without blank line!
 :toc-title: Inhaltsverzeichnis
 

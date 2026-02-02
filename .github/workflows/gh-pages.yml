@@ -6,7 +6,7 @@ on:
       - main
     tags:
       - 'v*' # Triggered bei v1.0.0, v1.0.1 etc.
-  workflow_dispatch: {} # Erlaubt manuelles Starten unter dem Tab "Actions"
+  workflow_dispatch: {} # Erlaubt manuelles Starten unter "Actions"
 
 permissions:
   contents: write
@@ -27,7 +27,7 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      # 2. System-Abhängigkeiten installieren (Pandoc für EPUB, Graphviz für Diagramme)
+      # 2. System-Abhängigkeiten installieren
       - name: Install Dependencies
         run: |
           sudo apt-get update
@@ -40,7 +40,8 @@ jobs:
           ./dtcw local install doctoolchain
 
       # 4. Der fixierte Build-Schritt
-      # Nutzt export für Graphviz und befüllt deine Variablen {revnumber} etc.
+      # - Setzt den Pfad für Graphviz
+      # - Injiziert die Versionsnummer (Branch-Name oder Tag-Name)
       - name: Build docs
         run: |
           export GRAPHVIZ_DOT=/usr/bin/dot
@@ -61,7 +62,7 @@ jobs:
           echo '<meta http-equiv="refresh" content="0; url=arc42.html">' > build/html5/index.html
 
       # 7. PDF und EPUB ins Repository committen
-      # Der Trick "HEAD:main" erlaubt Pushes auch wenn man gerade auf einem Tag (Detached HEAD) ist.
+      # "HEAD:main" sorgt dafür, dass auch beim Bauen eines Tags die PDFs im main-Branch landen.
       - name: Commit and Push Artifacts
         run: |
           git config --local user.email "action@github.com"
