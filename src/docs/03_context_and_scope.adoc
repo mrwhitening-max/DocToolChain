@@ -16,7 +16,11 @@ ifndef::imagesdir[:imagesdir: ../images]
 
 === Technischer Kontext
 
-plantuml::docs/structurizr/diagrams/AWS_HA_Sicht.puml["structurizr-Container",format=svg]
+plantuml::docs/structurizr/diagrams/SystemContext-001.puml["System-Context",format=svg]
+
+plantuml::docs/structurizr/diagrams/Containers-001.puml["System-Container",format=svg]
+
+plantuml::docs/structurizr/diagrams/AWS_HA_Sicht.puml["AWS-HA-Setup",format=svg]
 
 
 
