@@ -12,33 +12,27 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      # 1. Repo auschecken
       - name: Checkout
         uses: actions/checkout@v4
 
-      # 2. Structurizr exportieren und generierte Files prüfen
-      - name: Export Structurizr & List Files
+      - name: Build & Export
         run: |
           chmod +x dtcw
-          ./dtcw docker exportStructurizr
-          echo "--- Generierte Diagramme im Workspace: ---"
-          find . -name "*.puml"
-          find . -name "*.png"
-          find . -name "*.svg"
-
-      # 3. docToolchain bauen
-      - name: Build docs
-        run: |
+          # Wir machen alles in einem Docker-Aufruf
           ./dtcw docker exportStructurizr generateHTML
+          
+          echo "--- Debug: Diese Diagramme wurden generiert ---"
+          find . -name "*.puml"
 
-      # 4. Redirect erstellen
       - name: Create index.html redirect
         run: |
-          echo '<meta http-equiv="refresh" content="0; url=arc42.html">' > build/html5/index.html
+          # Pfad-Check: Falls dein HTML in build/docs/html5 liegt, hier anpassen!
+          mkdir -p build/docs/html5
+          echo '<meta http-equiv="refresh" content="0; url=arc42.html">' > build/docs/html5/index.html
 
-      # 5. Deploy auf gh-pages
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./build/html5
+          # Hier den Pfad nutzen, der in deiner docToolchainConfig.groovy steht
+          publish_dir: ./build/docs/html5
