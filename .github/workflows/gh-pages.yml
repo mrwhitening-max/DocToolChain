@@ -1,9 +1,12 @@
-name: docToolchain Build, Deploy & Save Artifacts
+name: docToolchain Ultimate Release & Deploy
 
 on:
   push:
     branches:
       - main
+    tags:
+      - 'v*' # Trigger bei v1.0.0, v1.1.0, etc.
+  workflow_dispatch: {} # Erlaubt manuelles Starten
 
 permissions:
   contents: write
@@ -17,12 +20,13 @@ jobs:
         with:
           fetch-depth: 0
 
-      # 1. Java 17 installieren
+      # 1. Java 17 installieren (mit Cache für schnellere Builds)
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
+          cache: 'gradle'
 
       # 2. System-Abhängigkeiten installieren
       - name: Install Dependencies
@@ -36,11 +40,13 @@ jobs:
           chmod +x dtcw
           ./dtcw local install doctoolchain
 
-      # 4. Der fixierte Build-Schritt (Kombiniert alle Tasks in einem Aufruf)
+      # 4. Der fixierte Build-Schritt
+      # Behebt "Cannot find Graphviz" [cite: 1] und füllt deine Variablen
       - name: Build docs
         run: |
+          export GRAPHVIZ_DOT=/usr/bin/dot
           ./dtcw local exportStructurizr generateHTML generatePDF convertToEpub \
-          "-Pattributes=revnumber=${{ github.ref_name }},revdate=$(date +'%d.%m.%Y'),revremark=GitHub-Action-Build"
+          "-Pattributes=revnumber=${{ github.ref_name }},revdate=$(date +'%d.%m.%Y'),revremark=CI-Build"
 
       # 5. EPUB und PDF für das Repository vorbereiten
       - name: Prepare Artifact folders
@@ -61,9 +67,20 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add epub/arc42.epub pdf/arc42.pdf
-          git diff --quiet && git diff --staged --quiet || (git commit -m "docs: update pdf and epub versions" && git push)
+          git diff --quiet && git diff --staged --quiet || (git commit -m "docs: update artifacts for ${{ github.ref_name }}" && git push)
 
-      # 8. HTML auf GitHub Pages veröffentlichen
+      # 8. NEU: Dateien an das GitHub Release hängen (nur bei Tags)
+      - name: Upload Assets to Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            epub/arc42.epub
+            pdf/arc42.pdf
+          body: "Release der Dokumentation Version ${{ github.ref_name }}"
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      # 9. HTML auf GitHub Pages veröffentlichen
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
