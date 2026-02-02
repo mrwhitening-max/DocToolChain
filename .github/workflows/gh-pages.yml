@@ -24,20 +24,24 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      # 2. Pandoc für EPUB-Konvertierung installieren
-      - name: Install Pandoc
-        run: sudo apt-get update && sudo apt-get install -y pandoc
+      # 2. Pandoc UND Graphviz auf dem Runner installieren
+      - name: Install Dependencies (Pandoc & Graphviz)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y pandoc graphviz
 
-      # 3. docToolchain lokal installieren (Wichtig!)
+      # 3. docToolchain lokal installieren
       - name: Install docToolchain local
         run: |
           chmod +x dtcw
           ./dtcw local install doctoolchain
 
-      # 4. Build ausführen (local nutzt nun das installierte docToolchain und Pandoc)
+      # 4. Build ausführen
       - name: Build docs
         run: |
-          ./dtcw local exportStructurizr generateHTML convertToEpub -P-a-asciidoctor-diagram-outdir=build/images
+          # Wir setzen zusätzlich die Umgebungsvariable für Graphviz (sicher ist sicher)
+          export GRAPHVIZ_DOT=/usr/bin/dot
+          ./dtcw local exportStructurizr generateHTML convertToEpub
 
       # 5. EPUB für Repository vorbereiten
       - name: Prepare EPUB folder
