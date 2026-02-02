@@ -36,21 +36,18 @@ jobs:
           chmod +x dtcw
           ./dtcw local install doctoolchain
 
-      # 4. Build ausführen (exportiert C4, generiert HTML, PDF und EPUB)
+      # 4. Build ausführen (Exportiert C4 & generiert alle Formate mit Attributen)
+      # Wir nutzen einfache Anführungszeichen außen und doppelte innen für das -P Argument
       - name: Build docs
         run: |
           export GRAPHVIZ_DOT=/usr/bin/dot
-          ./dtcw local exportStructurizr generateHTML generatePDF convertToEpub
-
-      - name: Build docs
-        run: |
-          ./dtcw local generateHTML -Pattributes="revnumber=${{ github.ref_name }},revremark=GitHub Action Build"
+          ./dtcw local exportStructurizr generateHTML generatePDF convertToEpub \
+            "-Pattributes=revnumber=${{ github.ref_name }},revremark=GitHub Action Build"
 
       # 5. EPUB und PDF für das Repository vorbereiten
       - name: Prepare Artifact folders
         run: |
           mkdir -p epub pdf
-          # Kopiert die Dateien aus dem build-Verzeichnis in die Repo-Ordner
           find build -name "*.epub" -exec cp {} epub/arc42.epub \;
           find build -name "*.pdf" -exec cp {} pdf/arc42.pdf \;
 
