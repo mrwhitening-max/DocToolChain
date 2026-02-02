@@ -3,12 +3,14 @@ outputPath = 'build'
 inputPath = 'src'
 
 inputFiles = [
+    // epub zu Formaten hinzugefügt
     [file: 'arc42.adoc', formats: ['html', 'pdf', 'epub']],
 ]
 
 imageDirs = [
     'images/.',
-    'src/docs/structurizr/diagrams' // <--- Diesen Pfad hinzufügen
+    // Pfad für Structurizr-Diagramme hinzugefügt, damit sie im EPUB landen
+    'src/docs/structurizr/diagrams'
 ]
 
 taskInputsDirs = [

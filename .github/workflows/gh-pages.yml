@@ -17,14 +17,14 @@ jobs:
         with:
           fetch-depth: 0
 
-      # 1. Java 17 installieren (Voraussetzung laut Guide)
+      # 1. Java 17 installieren (Voraussetzung für docToolchain local)
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
 
-      # 2. Pandoc UND Graphviz auf dem Runner installieren
+      # 2. Pandoc (für EPUB) und Graphviz (für Diagramme) installieren
       - name: Install Dependencies (Pandoc & Graphviz)
         run: |
           sudo apt-get update
@@ -37,9 +37,10 @@ jobs:
           ./dtcw local install doctoolchain
 
       # 4. Build ausführen
+      # exportStructurizr generiert die Diagramme (benötigt Graphviz)
+      # generateHTML & convertToEpub erstellen die Dokumente
       - name: Build docs
         run: |
-          # Wir setzen zusätzlich die Umgebungsvariable für Graphviz (sicher ist sicher)
           export GRAPHVIZ_DOT=/usr/bin/dot
           ./dtcw local exportStructurizr generateHTML convertToEpub
 
@@ -47,15 +48,16 @@ jobs:
       - name: Prepare EPUB folder
         run: |
           mkdir -p epub
+          # Findet das generierte EPUB im build-Ordner
           find build -name "*.epub" -exec cp {} epub/arc42.epub \;
 
-      # 6. Redirect für GitHub Pages
+      # 6. Redirect für GitHub Pages (arc42.html ist Hauptseite)
       - name: Create index.html redirect
         run: |
           mkdir -p build/html5
           echo '<meta http-equiv="refresh" content="0; url=arc42.html">' > build/html5/index.html
 
-      # 7. EPUB ins Repo pushen
+      # 7. EPUB ins Repo pushen (nur bei Änderungen)
       - name: Commit and Push EPUB
         run: |
           git config --local user.email "action@github.com"
@@ -63,7 +65,7 @@ jobs:
           git add epub/arc42.epub
           git diff --quiet && git diff --staged --quiet || (git commit -m "docs: update epub version" && git push)
 
-      # 8. Deploy HTML auf GitHub Pages
+      # 8. HTML Dokumentation auf GitHub Pages veröffentlichen
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
