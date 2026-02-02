@@ -15,38 +15,34 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          # Notwendig, um später pushen zu können
           fetch-depth: 0
 
-      # 2. docToolchain: Export & Generierung (jetzt inklusive EPUB)
+      # Korrigierter Task: convertToEpub statt generateEPUB
       - name: Build docs
         run: |
           chmod +x dtcw
-          ./dtcw docker exportStructurizr generateHTML generateEPUB
+          ./dtcw docker exportStructurizr generateHTML convertToEpub
 
-      # 3. EPUB in das Repo-Verzeichnis kopieren
+      # EPUB finden und ins Repo-Verzeichnis kopieren
       - name: Prepare EPUB folder
         run: |
           mkdir -p epub
-          # docToolchain legt das EPUB in build/epub/ ab
-          cp build/epub/arc42.epub epub/
+          # Wir suchen das File im build-Ordner (da outputPath = 'build')
+          find build -name "*.epub" -exec cp {} epub/arc42.epub \;
 
-      # 4. Redirect für GH-Pages (wie bisher)
       - name: Create index.html redirect
         run: |
           mkdir -p build/html5
           echo '<meta http-equiv="refresh" content="0; url=arc42.html">' > build/html5/index.html
 
-      # 5. EPUB zurück ins Repository committen
+      # Zurück ins Repo pushen
       - name: Commit and Push EPUB
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add epub/arc42.epub
-          # Nur committen, wenn sich das EPUB tatsächlich geändert hat
           git diff --quiet && git diff --staged --quiet || (git commit -m "docs: update epub version" && git push)
 
-      # 6. Deploy auf die gh-pages Branch (HTML Sicht)
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
