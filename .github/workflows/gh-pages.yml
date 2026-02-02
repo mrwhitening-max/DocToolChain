@@ -38,10 +38,11 @@ jobs:
 
       # 4. Der fixierte Build-Schritt (Kombiniert alle Tasks in einem Aufruf)
       - name: Build docs
-        run: |
-          export GRAPHVIZ_DOT=/usr/bin/dot
-          ./dtcw local exportStructurizr generateHTML generatePDF convertToEpub \
-          -Pattributes=revnumber=${{ github.ref_name }},revremark=GitHub-Action-Build
+          run: |
+            export GRAPHVIZ_DOT=/usr/bin/dot
+            # Wir fügen revdate hinzu und nutzen $(date +%d.%m.%Y) für das aktuelle Datum
+            ./dtcw local exportStructurizr generateHTML generatePDF convertToEpub \
+            -Pattributes=revnumber=${{ github.ref_name }},revdate=$(date +%d.%m.%Y),revremark=GitHub-Action-Build
 
       # 5. EPUB und PDF für das Repository vorbereiten
       - name: Prepare Artifact folders
