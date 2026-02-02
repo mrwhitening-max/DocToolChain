@@ -10,7 +10,7 @@ ifndef::imagesdir[:imagesdir: ../images]
 === Fachlicher Kontext
 
 
-plantuml::docs/structurizr/diagrams/SystemContext-001.puml["Systemkontext",format=svg]
+plantuml::docs/structurizr/diagrams/SystemContext.puml["Systemkontext",format=svg]
 
 
 **<Diagramm und/oder Tabelle>**
@@ -19,7 +19,7 @@ plantuml::docs/structurizr/diagrams/SystemContext-001.puml["Systemkontext",forma
 
 === Technischer Kontext
 
-plantuml::docs/structurizr/diagrams/Container-001.puml["structurizr-Container",format=svg]
+plantuml::docs/structurizr/diagrams/AWS_HA_Sicht.puml["structurizr-Container",format=svg]
 
 
 
