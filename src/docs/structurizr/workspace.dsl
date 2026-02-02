@@ -14,16 +14,13 @@ workspace {
         deploymentEnvironment "Production" {
             deploymentNode "AWS" {
                 tags "Amazon Web Services - Cloud"
-
                 region = deploymentNode "eu-central-1" {
                     tags "Amazon Web Services - Region"
 
-                    # Infrastructure
                     alb = infrastructureNode "Application Load Balancer" {
                         tags "Amazon Web Services - Application Load Balancer"
                     }
 
-                    # Security Groups (Icons via Tags)
                     webSg = infrastructureNode "Web Security Group" {
                         tags "Amazon Web Services - VPC Security Group"
                     }
@@ -31,9 +28,7 @@ workspace {
                         tags "Amazon Web Services - VPC Security Group"
                     }
 
-                    # Gruppierung der Web-Ebene (Auto Scaling Group Simulation)
-                    asg = deploymentNode "Auto Scaling Group" "Sichert 3 Instanzen" {
-
+                    asg = deploymentNode "Auto Scaling Group" {
                         azA = deploymentNode "Availability Zone A" {
                             tags "Amazon Web Services - Availability Zone"
                             deploymentNode "EC2 Instance" {
@@ -62,11 +57,9 @@ workspace {
                         dbInst = containerInstance database
                     }
 
-                    # Beziehungen
                     alb -> webappInst1 "Forwarded"
                     alb -> webappInst2 "Forwarded"
                     alb -> webappInst3 "Forwarded"
-
                     webSg -> alb "Sichert"
                     dbSg -> dbInst "Sichert"
                 }
@@ -75,18 +68,29 @@ workspace {
     }
 
     views {
-        # Falls dein arc42 noch andere Diagramme braucht, füge sie hier hinzu!
+        # --- DIESE BLÖCKE FEHLTEN ---
 
+        # 1. System Context View
+        systemContext softwareSystem "SystemContext-001" {
+            include *
+            autolayout lr
+        }
+
+        # 2. Container View
+        container softwareSystem "Containers-001" {
+            include *
+            autolayout lr
+        }
+
+        # 3. Deine HA Deployment View
         deployment softwareSystem "Production" "AWS_HA_Sicht" {
             include *
             autolayout lr
         }
 
-        # DAS ZAUBERMITTEL FÜR DIE OPTIK:
         theme https://static.structurizr.com/themes/amazon-web-services-2023.01.31/theme.json
 
         styles {
-            # Ergänzende Styles für Elemente, die kein Icon haben
             element "Infrastructure Node" {
                 shape RoundedBox
             }
