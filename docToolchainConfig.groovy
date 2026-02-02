@@ -3,7 +3,7 @@ outputPath = 'build'
 inputPath = 'src'
 
 inputFiles = [
-    [file: 'arc42.adoc', formats: ['html', 'pdf']],
+    [file: 'arc42.adoc', formats: ['html', 'pdf', 'epub']],
 ]
 
 imageDirs = [
