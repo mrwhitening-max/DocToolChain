@@ -17,37 +17,41 @@ jobs:
         with:
           fetch-depth: 0
 
-      # 1. Java 17 installieren (Voraussetzung für docToolchain lokal)
+      # 1. Java 17 installieren (Voraussetzung laut Guide)
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
 
-      # 2. Pandoc auf dem Runner installieren
+      # 2. Pandoc für EPUB-Konvertierung installieren
       - name: Install Pandoc
         run: sudo apt-get update && sudo apt-get install -y pandoc
 
-      # 3. docToolchain: Export & Generierung (Lokal via dtcw)
-      - name: Build docs
+      # 3. docToolchain lokal installieren (Wichtig!)
+      - name: Install docToolchain local
         run: |
           chmod +x dtcw
-          # Wir nutzen 'local' statt 'docker', da Pandoc jetzt auf dem Host ist
+          ./dtcw local install doctoolchain
+
+      # 4. Build ausführen (local nutzt nun das installierte docToolchain und Pandoc)
+      - name: Build docs
+        run: |
           ./dtcw local exportStructurizr generateHTML convertToEpub
 
-      # 4. EPUB finden und ins Repo-Verzeichnis kopieren
+      # 5. EPUB für Repository vorbereiten
       - name: Prepare EPUB folder
         run: |
           mkdir -p epub
           find build -name "*.epub" -exec cp {} epub/arc42.epub \;
 
-      # 5. Redirect für GH-Pages
+      # 6. Redirect für GitHub Pages
       - name: Create index.html redirect
         run: |
           mkdir -p build/html5
           echo '<meta http-equiv="refresh" content="0; url=arc42.html">' > build/html5/index.html
 
-      # 6. EPUB zurück ins Repository pushen
+      # 7. EPUB ins Repo pushen
       - name: Commit and Push EPUB
         run: |
           git config --local user.email "action@github.com"
@@ -55,7 +59,7 @@ jobs:
           git add epub/arc42.epub
           git diff --quiet && git diff --staged --quiet || (git commit -m "docs: update epub version" && git push)
 
-      # 7. Deploy auf die gh-pages Branch
+      # 8. Deploy HTML auf GitHub Pages
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
