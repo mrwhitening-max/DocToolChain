@@ -29,7 +29,7 @@ jobs:
       # 3. docToolchain bauen
       - name: Build docs
         run: |
-          ./dtcw docker generateHTML
+          ./dtcw docker exportStructurizr generateHTML
 
       # 4. Redirect erstellen
       - name: Create index.html redirect
