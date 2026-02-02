@@ -24,7 +24,7 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      # 2. System-Abhängigkeiten installieren
+      # 2. System-Abhängigkeiten installieren (Pandoc & Graphviz)
       - name: Install Dependencies
         run: |
           sudo apt-get update
@@ -36,13 +36,12 @@ jobs:
           chmod +x dtcw
           ./dtcw local install doctoolchain
 
-      # 4. Build ausführen (Exportiert C4 & generiert alle Formate mit Attributen)
-      # Wir nutzen einfache Anführungszeichen außen und doppelte innen für das -P Argument
+      # 4. Der fixierte Build-Schritt
       - name: Build docs
         run: |
           export GRAPHVIZ_DOT=/usr/bin/dot
           ./dtcw local exportStructurizr generateHTML generatePDF convertToEpub \
-            "-Pattributes=revnumber=${{ github.ref_name }},revremark=GitHub Action Build"
+          "-Pattributes=revnumber=${{ github.ref_name }},revremark=GitHub Action Build"
 
       # 5. EPUB und PDF für das Repository vorbereiten
       - name: Prepare Artifact folders
@@ -51,13 +50,13 @@ jobs:
           find build -name "*.epub" -exec cp {} epub/arc42.epub \;
           find build -name "*.pdf" -exec cp {} pdf/arc42.pdf \;
 
-      # 6. Redirect für GitHub Pages (HTML)
+      # 6. Redirect für GitHub Pages
       - name: Create index.html redirect
         run: |
           mkdir -p build/html5
           echo '<meta http-equiv="refresh" content="0; url=arc42.html">' > build/html5/index.html
 
-      # 7. PDF und EPUB ins Repository committen
+      # 7. Dateien ins Repo committen
       - name: Commit and Push Artifacts
         run: |
           git config --local user.email "action@github.com"
@@ -65,7 +64,7 @@ jobs:
           git add epub/arc42.epub pdf/arc42.pdf
           git diff --quiet && git diff --staged --quiet || (git commit -m "docs: update pdf and epub versions" && git push)
 
-      # 8. HTML auf GitHub Pages veröffentlichen
+      # 8. Deploy HTML
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
